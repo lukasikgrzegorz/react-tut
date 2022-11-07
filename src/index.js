@@ -5,7 +5,7 @@ import './index.css';
 class Header extends React.Component { 
 	render() {
 		return (
-			<h1 class="title">Kółko i krzyżyk</h1>
+			<h1 className="title">Kółko i krzyżyk</h1>
 		);
 	}
 };
@@ -14,16 +14,26 @@ class Header extends React.Component {
 class Square extends React.Component {
   render() {
     return (
-      <button className="square">
-        {/* TODO */}
+      <button className="square"
+        onClick={() => this.props.onClick}>
+        {this.props.value}
       </button>
     );
   }
 }
 
 class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares:Array(9).fill(null),
+    }
+  }
   renderSquare(i) {
-    return <Square />;
+    return (
+      <Square value={this.props.squares[i]}
+        onClick={()=>this.handleClick(i)}
+    />)
   }
 
   render() {
