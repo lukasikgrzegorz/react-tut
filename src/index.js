@@ -4,7 +4,7 @@ import "./index.css";
 
 function Square(props) {
 	return (
-		<button className="square" onClick={props.onClick}>
+		<button className="square" id={props.id} onClick={props.onClick}>
 			{props.value}
 		</button>
 	);
@@ -12,19 +12,23 @@ function Square(props) {
 
 class Board extends React.Component {
 	renderSquare(i) {
-		return <Square value={this.props.squares[i]} onClick={() => this.props.onClick(i)} />;
+		return <Square key={i} value={this.props.squares[i]} onClick={() => this.props.onClick(i)} />;
 	}
 
 	render() {
-		const markup = Array();
+		const board = [];
 		for (let i = 0; i < 3; i++) {
-			const row = Array();
+			const row = [];
 			for (let j = 0; j < 3; j++) {
 				row.push(this.renderSquare(j + i * 3));
 			}
-			markup.push(<div className="board-row">{row}</div>);
+			board.push(
+				<div key={i} className="board-row">
+					{row}
+				</div>
+			);
 		}
-		return <div>{markup}</div>;
+		return <div>{board}</div>;
 	}
 }
 
@@ -35,6 +39,7 @@ class Game extends React.Component {
 			history: [
 				{
 					squares: Array(9).fill(null),
+					lastMove: null,
 				},
 			],
 			stepNumber: 0,
@@ -46,6 +51,8 @@ class Game extends React.Component {
 		const history = this.state.history.slice(0, this.state.stepNumber + 1);
 		const current = history[history.length - 1];
 		const squares = current.squares.slice();
+		const currentMove = i;
+
 		if (calculateWinner(squares) || squares[i]) {
 			return;
 		}
@@ -54,6 +61,7 @@ class Game extends React.Component {
 			history: history.concat([
 				{
 					squares: squares,
+					lastMove: currentMove,
 				},
 			]),
 			stepNumber: history.length,
@@ -72,9 +80,12 @@ class Game extends React.Component {
 		const history = this.state.history;
 		const current = history[this.state.stepNumber];
 		const winner = calculateWinner(current.squares);
+		const stepNumber = this.state.stepNumber;
 
 		const moves = history.map((step, move) => {
-			const desc = move ? "Przejdź do ruchu #" + move : "Przejdź na początek gry";
+			const desc = move
+				? `Przejdź do ruchu #${move} (${Math.floor(step.lastMove / 3)},${step.lastMove % 3})`
+				: "Przejdź na początek gry";
 			return (
 				<li key={move}>
 					<button onClick={() => this.jumpTo(move)}>{desc}</button>
@@ -86,7 +97,7 @@ class Game extends React.Component {
 		if (winner) {
 			status = "Winner: " + winner;
 		} else {
-			status = "Next player: " + (this.state.xIsNext ? "X" : "O");
+			status = stepNumber === 9 ? "Draw" : "Next player: " + (this.state.xIsNext ? "X" : "O");
 		}
 
 		return (
